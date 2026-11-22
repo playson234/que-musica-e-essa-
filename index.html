@@ -53,8 +53,8 @@ body{display:flex;align-items:center;justify-content:center;font-family:'Lil','L
 .card .em{font-size:120px;line-height:1.1;margin-top:4px;filter:drop-shadow(0 0 20px #ff2e93);white-space:nowrap}
 .card .ch{position:absolute;left:26px;top:14px;font-size:24px;background:#ff2e93;border-radius:16px;padding:2px 16px}
 .card .lt{position:absolute;right:26px;top:14px;font-size:24px;background:#ffd60a;color:#10243a;border-radius:16px;padding:2px 16px}
-.dc{position:absolute;left:150px;right:150px;top:872px;z-index:4;display:flex;flex-direction:column;gap:10px}
-.d{height:84px;border-radius:26px;display:flex;align-items:center;gap:12px;padding:0 16px 0 16px;font-size:26px;line-height:1.08}
+.dc{position:absolute;left:150px;right:150px;top:872px;z-index:4;display:flex;flex-direction:column;gap:8px}
+.d{height:72px;border-radius:26px;display:flex;align-items:center;gap:12px;padding:0 16px 0 16px;font-size:26px;line-height:1.08}
 .d i{font-style:normal;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;flex:none}
 .d span{flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .d em{font-style:normal;font-size:28px;flex:none}
@@ -71,6 +71,11 @@ body{display:flex;align-items:center;justify-content:center;font-family:'Lil','L
 .rk .r b{width:34px;color:#22e4ff;font-weight:400}.rk .r .n{flex:0 1 auto;max-width:640px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rk .r .v{color:#ffd60a;flex:none}.rk .r .v::before{content:'· ';color:#ffffff88}
 .rk .r .v small{font-size:.72em;opacity:.8}.rk .r{background-repeat:no-repeat}
 .rk .vz{font-size:27px;color:#ffffffaa;text-align:center;margin-top:40px}
+.fgoal{position:absolute;left:36px;right:36px;top:1110px;height:40px;border-radius:20px;background:#14062e;border:3px solid #fff;overflow:hidden;box-shadow:0 0 18px rgba(34,228,255,.5);z-index:4}
+.fgoal .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:#ff2bd6;transition:width .6s}
+.fgoal .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;white-space:nowrap;text-shadow:-2px -2px 0 #14062e,2px -2px 0 #14062e,-2px 2px 0 #14062e,2px 2px 0 #14062e}
+.fgoal.hit{animation:fgbF .35s 8 alternate}
+@keyframes fgbF{to{transform:scale(1.03)}}
 .ap{position:absolute;left:0;right:0;top:1362px;text-align:center;font-size:26px;color:#ffe8a8;z-index:4}
 .selo-ia{position:absolute;right:36px;top:300px;text-align:right;font-size:20px;color:#ffffffcc;z-index:4}
 #over{position:absolute;left:36px;right:36px;top:594px;height:756px;z-index:20;display:none}
@@ -110,7 +115,7 @@ body{display:flex;align-items:center;justify-content:center;font-family:'Lil','L
  <div class="dc" id="dc"></div>
  <div id="over"></div>
  <div class="rk" id="rk"></div>
- <div class="ap">seu apoio ajuda muito 💛</div><div class="selo-ia">Personagens gerados por IA</div>
+ <div class="fgoal" id="fgoal"><div class="fill" id="fgFill"></div><div class="lbl" id="fgLbl"></div></div><div class="ap">seu apoio ajuda muito 💛</div><div class="selo-ia">Personagens gerados por IA</div>
  <div class="status" id="status"><i></i><span>conectando...</span></div>
 </div>
 <script>
@@ -233,7 +238,10 @@ async function fimRodada(){S.fase='fim';$('tim').classList.remove('low');$('timT
  if(camp){S.tot=new Map();renderRk()}
  novaRodada()}
 // ---------- alertas
-function onFollow(u0){const u=user(u0);if(S.seg.has(u.id))return;S.seg.add(u.id);SOM.combo(3);
+const FG={meta:+(Q.get('metaseg')||20),n:0};
+try{const sv=JSON.parse(localStorage.getItem('qm_fg')||'null');if(sv&&sv.d===new Date().toDateString()){FG.meta=sv.meta;FG.n=sv.n}}catch(e){}
+function renderFG(){$('fgFill').style.width=Math.min(100,FG.n/FG.meta*100)+'%';$('fgLbl').textContent='👥 SEGUIDORES NOVOS: '+FG.n+' / '+FG.meta;try{localStorage.setItem('qm_fg',JSON.stringify({d:new Date().toDateString(),meta:FG.meta,n:FG.n}))}catch(e){}}
+function onFollow(u0){const u=user(u0);if(S.seg.has(u.id))return;S.seg.add(u.id);SOM.combo(3);FG.n++;if(FG.n>=FG.meta){FG.meta*=2;const el=$('fgoal');el.classList.remove('hit');void el.offsetWidth;el.classList.add('hit')}renderFG();
  if(Date.now()-ultSeg>7000&&!falando){ultSeg=Date.now();fala('seg',cut(u.name,18),null,'NOVO SEGUIDOR')}else aviso('💜 Valeu, '+esc(cut(u.name,18))+', pelo novo seguidor!')}
 function onGift(u0){const u=user(u0);SOM.presente();aviso('🎁 Obrigado pelo apoio, '+esc(cut(u.name,18))+'!')}
 function onJoin(u0){const u=user(u0);toast('👋 '+cut(u.name,18)+' chegou na live!')}
@@ -255,5 +263,5 @@ document.addEventListener('keydown',e=>{ac();if(e.key==='d'||e.key==='D'){if(!CF
 function fit(){const s=Math.min(innerWidth/1080,innerHeight/1920);$('stage').style.transform=`scale(${s})`}
 addEventListener('resize',fit);fit();
 if(CFG.demo)demoTick();
-conectar();novaRodada();
+renderFG();conectar();novaRodada();
 </script></body></html>
